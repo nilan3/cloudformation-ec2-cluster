@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Cluster Master Stack
+Parameters:
+  Version:
+    Type: String
+    Default: "0.0.1"
+    Description: Version of the application
+  Environment:
+    Type: String
+    Default: dev
+    Description: Select the appropriate environment
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  S3CfnBucketName:
+    Type: String
+    Description: S3Bucket Path where the templates are stored
+    Default: aws-cloudformation-templates
+  Ec2KeyName:
+    Type: String
+
+Resources:
+  VPCStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${S3CfnBucketName}-${Environment}-${AWS::Region}/templates/vpc-stack.yml"
+      Parameters:
+        Version: !Ref Version
+        Environment: !Ref Environment
+        AvZone1: !Sub "${AWS::Region}a"
+        AvZone2: !Sub "${AWS::Region}b"
+        NetworkAclStackTemplateURL: !Sub "https://s3.amazonaws.com/${S3CfnBucketName}-${Environment}-${AWS::Region}/templates/network-acl-stack.yml"
+      Tags:
+        - Key: Name
+          Value: VPCStack
+        - Key: Version
+          Value: !Ref Version
+        - Key: Environment
+          Value: !Ref Environment
+
+  InstanceSecurityGroupStack:
+    DependsOn:
+      - VPCStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${S3CfnBucketName}-${Environment}-${AWS::Region}/templates/instance-security-group-stack.yml"
+      Parameters:
+        Environment:
+          Ref: Environment
+        VpcCIDR: !GetAtt VPCStack.Outputs.VpcCIDR
+        VPC: !GetAtt VPCStack.Outputs.VPC
+      TimeoutInMinutes: '15'
+      Tags:
+        - Key: Name
+          Value: InstanceSecurityGroupStack
+        - Key: Version
+          Value: !Ref Version
+        - Key: Environment
+          Value: !Ref Environment

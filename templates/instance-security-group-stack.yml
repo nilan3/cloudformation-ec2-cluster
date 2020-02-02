@@ -1,0 +1,186 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create security groups for instances in public/private VPC
+Parameters:
+  Environment:
+    Type: String
+    Description: Used for miscellaneous object names and tags
+  VPC:
+    Type: String
+    Description: Object ID of VPC
+  VpcCIDR:
+    Type: String
+    Description: IP Address range for the VPC
+
+Resources:
+  PrivInstSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for allowing access in/out of private instances
+        in VPC
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: Private Instance Security Group
+      - Key: Environment
+        Value:
+          Ref: Environment
+  PrivInstSGEgressGlobalHttp:
+    DependsOn:
+    - PrivInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: PrivInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  PrivInstSGEgressGlobalHttps:
+    DependsOn:
+    - PrivInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: PrivInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 0.0.0.0/0
+  PrivInstSGEgressSsh:
+    DependsOn:
+    - PrivInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: PrivInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: PrivInstSecurityGroup
+  PrivInstSGIngressSsh:
+    DependsOn:
+    - PrivInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PrivInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp:
+        Ref: VpcCIDR
+  PrivInstSGIngressHttp:
+    DependsOn:
+    - PrivInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PrivInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      SourceSecurityGroupId:
+        Ref: PrivInstSecurityGroup
+  PrivInstSGIngressHttps:
+    DependsOn:
+    - PrivInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PrivInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      SourceSecurityGroupId:
+        Ref: PrivInstSecurityGroup
+  PubInstSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for allowing access in/out of public instances
+        in VPC
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: Public Instance Security Group
+      - Key: Environment
+        Value:
+          Ref: Environment
+  PubInstSGEgressGlobalHttp:
+    DependsOn:
+    - PubInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: PubInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  PubInstSGEgressGlobalHttps:
+    DependsOn:
+    - PubInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: PubInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 0.0.0.0/0
+  PubInstSGEgressSsh:
+    DependsOn:
+    - PubInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: PubInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId:
+        Ref: PrivInstSecurityGroup
+  PubInstSGIngressSsh:
+    DependsOn:
+    - PubInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PubInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 0.0.0.0/0 #TODO: Use VPN net block in prod
+  PubInstSGIngressHttp:
+    DependsOn:
+    - PubInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PubInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  PubInstSGIngressHttps:
+    DependsOn:
+    - PubInstSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PubInstSecurityGroup
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 0.0.0.0/0
+Outputs:
+  PrivInstSecurityGroup:
+    Description: Security group for instances in private subnets
+    Value:
+      Ref: PrivInstSecurityGroup
+  PubInstSecurityGroup:
+    Description: Security group for instances in public subnets
+    Value:
+      Ref: PubInstSecurityGroup
