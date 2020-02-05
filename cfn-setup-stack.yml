@@ -17,8 +17,6 @@ Parameters:
   S3CfnBucketName:
     Type: String
     Default: aws-cloudformation-templates
-  Ec2KeyName:
-    Type: String
 
 Resources:
   TemplatesBucket:

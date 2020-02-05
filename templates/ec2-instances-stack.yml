@@ -1,0 +1,173 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: A 4 node EC2 cluster and its associated security groups
+Parameters:
+  Environment:
+    Type: String
+    Description: Used for miscellaneous object names and tags
+  KeyName:
+    Description: EC2 key-pair to SSH on instance
+    Type: AWS::EC2::KeyPair::KeyName
+  BaseImage:
+    Description: Image ID for creating instance
+    Type: String
+  PrivateSubnet1Id:
+    Description: Subnet ID for Private Subnet 1
+    Type: String
+  PrivateSubnet2Id:
+    Description: Subnet ID for Private Subnet 2
+    Type: String
+  PublicSubnetId:
+    Description: Subnet ID for Public Subnet
+    Type: String
+  PrivateInstanceSG:
+    Description: Private instance security group ID
+    Type: String
+  PublicInstanceSG:
+    Description: Public instance security group ID
+    Type: String
+  ClusterInstanceType:
+    Description: EC2 instance type for Cluster nodes
+    Type: String
+  BastionInstanceType:
+    Description: EC2 instance type for Bastion node
+    Type: String
+    Default: t3.medium
+
+Resources:
+  Ec2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+  Ec2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref Ec2Role
+  Ec2RolePolicies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: Ec2Cluster
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+      Roles:
+        - !Ref Ec2Role
+  BastionNode:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      InstanceType:
+        Ref: ClusterInstanceType
+      ImageId:
+        Ref: BaseImage
+      SecurityGroupIds:
+        - !Ref PublicInstanceSG
+      SubnetId: !Ref PublicSubnetId
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      Tags:
+        - Key: Name
+          Value: Public-Node-Bastion
+        - Key: Environment
+          Value:
+            Ref: Environment
+  Node1:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      InstanceType:
+          Ref: ClusterInstanceType
+      ImageId:
+        Ref: BaseImage
+      SecurityGroupIds:
+        - !Ref PrivateInstanceSG
+      SubnetId: !Ref PrivateSubnet1Id
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      Tags:
+        - Key: Name
+          Value: Private-Node-1
+        - Key: Environment
+          Value:
+            Ref: Environment
+  Node2:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      InstanceType:
+          Ref: ClusterInstanceType
+      ImageId:
+        Ref: BaseImage
+      SecurityGroupIds:
+        - !Ref PrivateInstanceSG
+      SubnetId: !Ref PrivateSubnet1Id
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      Tags:
+        - Key: Name
+          Value: Private-Node-2
+        - Key: Environment
+          Value:
+            Ref: Environment
+  Node3:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      InstanceType:
+          Ref: ClusterInstanceType
+      ImageId:
+        Ref: BaseImage
+      SecurityGroupIds:
+        - !Ref PrivateInstanceSG
+      SubnetId: !Ref PrivateSubnet2Id
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      Tags:
+        - Key: Name
+          Value: Private-Node-3
+        - Key: Environment
+          Value:
+            Ref: Environment
+  Node4:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      InstanceType:
+          Ref: ClusterInstanceType
+      ImageId:
+        Ref: BaseImage
+      SecurityGroupIds:
+        - !Ref PrivateInstanceSG
+      SubnetId: !Ref PrivateSubnet2Id
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      Tags:
+        - Key: Name
+          Value: Private-Node-4
+        - Key: Environment
+          Value:
+            Ref: Environment
+  BastionNodeIPAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  BastionNodeIPAssoc:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref BastionNode
+      EIP: !Ref BastionNodeIPAddress
+
+Outputs:
+  BastionNodeInstanceId:
+    Description: InstanceId of the Bastion Node EC2 instance
+    Value: !Ref BastionNode
+  BastionNodeInstanceIPAddress:
+    Description: IP address of the Bastion Node EC2 instance
+    Value: !Ref BastionNodeIPAddress

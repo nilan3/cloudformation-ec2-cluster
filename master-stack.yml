@@ -20,6 +20,10 @@ Parameters:
     Default: aws-cloudformation-templates
   Ec2KeyName:
     Type: String
+    Description: EC2 Key Name
+  Ec2AmiId:
+    Type: String
+    Description: EC2 AMI ID
 
 Resources:
   VPCStack:
@@ -55,6 +59,35 @@ Resources:
       Tags:
         - Key: Name
           Value: InstanceSecurityGroupStack
+        - Key: Version
+          Value: !Ref Version
+        - Key: Environment
+          Value: !Ref Environment
+
+  Ec2InstancesStack:
+    DependsOn:
+      - VPCStack
+      - InstanceSecurityGroupStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${S3CfnBucketName}-${Environment}-${AWS::Region}/templates/ec2-instances-stack.yml"
+      Parameters:
+        Environment:
+          Ref: Environment
+        KeyName:
+          Ref: Ec2KeyName
+        BaseImage:
+          Ref: Ec2AmiId
+        PrivateSubnet1Id: !GetAtt VPCStack.Outputs.PrivateSubnetAZ1
+        PrivateSubnet2Id: !GetAtt VPCStack.Outputs.PrivateSubnetAZ2
+        PublicSubnetId: !GetAtt VPCStack.Outputs.PublicSubnetAZ1
+        PrivateInstanceSG: !GetAtt InstanceSecurityGroupStack.Outputs.PrivInstSecurityGroup
+        PublicInstanceSG: !GetAtt InstanceSecurityGroupStack.Outputs.PubInstSecurityGroup
+        ClusterInstanceType: t3.medium
+      TimeoutInMinutes: '15'
+      Tags:
+        - Key: Name
+          Value: Ec2InstancesStack
         - Key: Version
           Value: !Ref Version
         - Key: Environment

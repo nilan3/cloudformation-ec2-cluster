@@ -287,44 +287,44 @@ Resources:
         Ref: PrivSubnetAZ2
       RouteTableId:
         Ref: PrivateRouteTableAZ2
-  NetworkAclStack:
-    DependsOn:
-    - PrivSubnetAZ1
-    - PrivSubnetAZ2
-    - PubSubnetAZ1
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL:
-        Ref: NetworkAclStackTemplateURL
-      Parameters:
-        AvZone1:
-          Ref: AvZone1
-        AvZone2:
-          Ref: AvZone2
-        Environment:
-          Ref: Environment
-        PrivSubnetAZ1:
-          Ref: PrivSubnetAZ1
-        PrivSubnetAZ2:
-          Ref: PrivSubnetAZ2
-        PrivateSubnetAZ1:
-          Ref: PrivateSubnetAZ1
-        PrivateSubnetAZ2:
-          Ref: PrivateSubnetAZ2
-        PubSubnetAZ1:
-          Ref: PubSubnetAZ1
-        VPC:
-          Ref: VPC
-        VpcCIDR:
-          Ref: VpcCIDR
-      TimeoutInMinutes: '15'
-      Tags:
-        - Key: Name
-          Value: NetworkAclStack
-        - Key: Version
-          Value: !Ref Version
-        - Key: Environment
-          Value: !Ref Environment
+  # NetworkAclStack:
+  #   DependsOn:
+  #   - PrivSubnetAZ1
+  #   - PrivSubnetAZ2
+  #   - PubSubnetAZ1
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL:
+  #       Ref: NetworkAclStackTemplateURL
+  #     Parameters:
+  #       AvZone1:
+  #         Ref: AvZone1
+  #       AvZone2:
+  #         Ref: AvZone2
+  #       Environment:
+  #         Ref: Environment
+  #       PrivSubnetAZ1:
+  #         Ref: PrivSubnetAZ1
+  #       PrivSubnetAZ2:
+  #         Ref: PrivSubnetAZ2
+  #       PrivateSubnetAZ1:
+  #         Ref: PrivateSubnetAZ1
+  #       PrivateSubnetAZ2:
+  #         Ref: PrivateSubnetAZ2
+  #       PubSubnetAZ1:
+  #         Ref: PubSubnetAZ1
+  #       VPC:
+  #         Ref: VPC
+  #       VpcCIDR:
+  #         Ref: VpcCIDR
+  #     TimeoutInMinutes: '15'
+  #     Tags:
+  #       - Key: Name
+  #         Value: NetworkAclStack
+  #       - Key: Version
+  #         Value: !Ref Version
+  #       - Key: Environment
+  #         Value: !Ref Environment
   NatGatewayEipAZ1:
     DependsOn:
     - IgwAttachment
