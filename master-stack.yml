@@ -84,6 +84,7 @@ Resources:
         PrivateInstanceSG: !GetAtt InstanceSecurityGroupStack.Outputs.PrivInstSecurityGroup
         PublicInstanceSG: !GetAtt InstanceSecurityGroupStack.Outputs.PubInstSecurityGroup
         ClusterInstanceType: t3.medium
+        S3CfnBucketName: !Sub "${S3CfnBucketName}-${Environment}-${AWS::Region}"
       TimeoutInMinutes: '15'
       Tags:
         - Key: Name

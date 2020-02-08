@@ -15,6 +15,7 @@ then
 	  --stack-name cfn-setup-stack \
 	  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	  --region $REGION \
+	  --parameter-overrides Environment=${ENVIRONMENT} \
 	  --no-execute-changeset
 elif [[ $ACTION == "deploy" ]]
 then
@@ -25,7 +26,7 @@ then
 	  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	  --role-arn arn:aws:iam::${ACCOUNT_ID}:role/AWSCloudFormationServiceRole \
 	  --region $REGION \
-	  --parameter-overrides Ec2KeyName=${EC2_KEY_NAME} Ec2AmiId=${EC2_AMI_ID} \
+	  --parameter-overrides Environment=${ENVIRONMENT} Ec2KeyName=${EC2_KEY_NAME} Ec2AmiId=${EC2_AMI_ID} \
 	  --no-execute-changeset
 else
 	echo "Invalid argument"

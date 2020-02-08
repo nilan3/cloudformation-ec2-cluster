@@ -32,6 +32,9 @@ Parameters:
     Description: EC2 instance type for Bastion node
     Type: String
     Default: t3.medium
+  S3CfnBucketName:
+    Type: String
+    Description: S3Bucket Path where the templates are stored
 
 Resources:
   Ec2Role:
@@ -60,8 +63,8 @@ Resources:
       PolicyDocument:
         Statement:
           - Effect: Allow
-            Action: "*"
-            Resource: "*"
+            Action: ["s3:GetObject", "s3:PutObject"]
+            Resource: [ !Sub "arn:aws:s3:::${S3CfnBucketName}/*"]
       Roles:
         - !Ref Ec2Role
   BastionNode:
